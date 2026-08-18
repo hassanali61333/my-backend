@@ -51,10 +51,8 @@ const response = await productmodel.create({
 //========================================Get Product========================================
 export const  getProduct =async(req,res)=>{
 try{
-const response =await  productmodel.find({
-  stock : { $gt :0}
-})
-console.log(response)
+const response = await productmodel.find({});
+console.log("Products:", response);
 res.json({
   success:true,
   message:"prodcut get successfully",
