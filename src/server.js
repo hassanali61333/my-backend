@@ -13,7 +13,7 @@ dotenv.config();
 const port = process.env.PORT || 5000;
 console.log(process.env.JWT_SECRET);
 const app=express()
-app.use(cors({ origin: "*", credentials: true })); // ❌ galat combination
+
 app.use(cors());
 app.use(express.json());
 connectdb();
