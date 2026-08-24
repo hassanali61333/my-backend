@@ -32,7 +32,7 @@ export const login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "All fields required"
+        message: "All fields required",
       });
     }
 
@@ -41,33 +41,52 @@ export const login = async (req, res) => {
     if (!userFound) {
       return res.status(400).json({
         success: false,
-        message: "Email not found"
+        message: "Email not found",
       });
     }
 
     if (userFound.password !== password) {
       return res.status(400).json({
         success: false,
-        message: "Invalid password"
+        message: "Invalid password",
       });
     }
-    const token = jwt.sign({id : userFound._id , email :userFound.email}, process.env.JWT_SECRET, {expiresIn : "1d"}) 
 
-    res.status(200).json({
+    const token = jwt.sign(
+      {
+        id: userFound._id,
+        email: userFound.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
+
+  
+
+    // Password frontend ko mat bhejo
+    const userData = {
+      _id: userFound._id,
+      email: userFound.email,
+      name: userFound.name,
+      role: userFound.role,
+      token: token,
+    };
+
+    return res.status(200).json({
       success: true,
       message: "Login successful",
-      token :token
-      
+      data: userData,
     });
 
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
 };
-
 
 
 
