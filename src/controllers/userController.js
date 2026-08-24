@@ -1,5 +1,5 @@
 import user from "../models/userModel.js";
-
+import jwt from "jsonwebtoken"
 
 // =============================== Insert User Controller =======================================
 export const signup = async(req,res)=>{
@@ -32,7 +32,7 @@ export const login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "All fields required"
+        message: "All fields required",
       });
     }
 
@@ -41,31 +41,58 @@ export const login = async (req, res) => {
     if (!userFound) {
       return res.status(400).json({
         success: false,
-        message: "Email not found"
+        message: "Email not found",
       });
     }
 
-    if (userFound.password !== password.trim()) {
+    if (userFound.password !== password) {
       return res.status(400).json({
         success: false,
-        message: "Invalid password"
+        message: "Invalid password",
       });
     }
 
-    res.status(200).json({
+    const token = jwt.sign(
+      {
+        id: userFound._id,
+        email: userFound.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
+
+    // JWT ko HttpOnly cookie mein save karo
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    // Frontend ko sirf required user information bhejo
+    const userData = {
+      _id: userFound._id,
+      email: userFound.email,
+      name: userFound.name,
+      role: userFound.role,
+      token: token, 
+    };
+
+    return res.status(200).json({
       success: true,
       message: "Login successful",
-      data: userFound
+      data: userData,
     });
 
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
 };
-
 
 
 
