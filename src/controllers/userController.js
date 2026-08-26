@@ -65,13 +65,12 @@ export const login = async (req, res) => {
 
   
 
-    // Password frontend ko mat bhejo
+    
     const userData = {
       _id: userFound._id,
       email: userFound.email,
       name: userFound.name,
       role: userFound.role,
-      token: token,
     };
 
     return res.status(200).json({

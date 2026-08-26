@@ -2,14 +2,26 @@ import { response } from "express";
 import cardmodel from "../models/cardModel.js"
 import mongoose from "mongoose";
 import Stripe from "stripe";
+import { sendPushNotification } from "./notificationController.js";
 
 
 //===============================================create Order===============================================
 export const createOrder = async (req, res) => {
-  const { fullname, phone, email, address, city, postalcode, ordernotes, items, totalAmount,userID } = req.body;
+  const {
+    fullname,
+    phone,
+    email,
+    address,
+    city,
+    postalcode,
+    ordernotes,
+    items,
+    totalAmount,
+    userID,
+  } = req.body;
 
   try {
-    
+    // 1. Order MongoDB mein save karo
     const resp = await cardmodel.create({
       fullname,
       phone,
@@ -18,20 +30,39 @@ export const createOrder = async (req, res) => {
       city,
       postalcode,
       ordernotes,
-      items,          
+      items,
       totalAmount,
-      userID    
+      userID,
     });
 
-    res.json({
+    console.log("Order saved:", resp._id);
+
+  const adminID = "69d247ca3225a09c850445cc";
+
+console.log("🔔 About to send notification...");
+console.log("Admin ID:", adminID);
+
+await sendPushNotification(
+  adminID,
+  "🛒 New Order",
+  `${fullname} ne new order place kiya hai. Total: $${totalAmount}`
+);
+
+console.log("🔔 Notification function finished");
+
+    // 4. Response
+    res.status(201).json({
       success: true,
       message: "Order placed successfully",
-      data: resp
+      data: resp,
     });
+
   } catch (err) {
+    console.error("Create order error:", err);
+
     res.status(500).json({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
 };
