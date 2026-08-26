@@ -1,4 +1,4 @@
-import webpush from "../config/webPush.js";
+import webpush from "../config/webpush.js"
 import PushSubscription from "../models/pushSubscriptionModel.js";
 
 export const sendPushNotification = async (userID, title, body) => {
