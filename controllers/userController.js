@@ -1,27 +1,64 @@
 import user from "../models/userModel.js";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
-// =============================== Insert User Controller =======================================
-export const signup = async(req,res)=>{
-  const {name,email,password}= req.body;
+// =============================== Signup Controller =======================================
+export const signup = async (req, res) => {
+  const { name, email, password } = req.body;
 
-try{
-  console.log(req);
-  
-  const response = await  user.create({name,email,password})
-  res.status(200).json({
-    sucess:true,
-    message:'user signup suessfull',
-    data:response
-  })
-}
-catch (err) {
-  res.status(500).json({
-    sucess :false,
-    message:err.message
-  })
-}
-}
+  try {
+    // 1. Basic validation
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email and password are required",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    // 2. Check if email already exists
+    const existingUser = await user.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered",
+      });
+    }
+
+    // 3. Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 4. Create the user
+    const response = await user.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    // 5. Send sanitized response (NO password)
+    res.status(201).json({
+      success: true,
+      message: "User signup successful",
+      data: {
+        id: response._id,
+        name: response.name,
+        email: response.email,
+        role: response.role,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
 
 //================================== Login Controller===================================
 
@@ -56,6 +93,7 @@ export const login = async (req, res) => {
       {
         id: userFound._id,
         email: userFound.email,
+        role: userFound.role,
       },
       process.env.JWT_SECRET,
       {
