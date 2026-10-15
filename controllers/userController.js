@@ -75,6 +75,7 @@ export const login = async (req, res) => {
 
     const userFound = await user.findOne({ email });
 
+    // ✅ Pehle null check
     if (!userFound) {
       return res.status(400).json({
         success: false,
@@ -82,7 +83,18 @@ export const login = async (req, res) => {
       });
     }
 
-    if (userFound.password !== password) {
+    // ✅ Ab console.log safe hai
+    console.log("🔍 Body password:", JSON.stringify(password));
+    console.log("🔍 Body password length:", password?.length);
+    console.log("🔍 Stored hash:", userFound.password);
+    console.log("🔍 Stored hash length:", userFound.password?.length);
+    console.log("🔍 bcrypt.compare type:", typeof bcrypt.compare);
+
+    const isMatch = await bcrypt.compare(password, userFound.password);
+
+    console.log("🔍 Match result:", isMatch);
+
+    if (!isMatch) {
       return res.status(400).json({
         success: false,
         message: "Invalid password",
@@ -96,12 +108,9 @@ export const login = async (req, res) => {
         role: userFound.role,
       },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "1d",
-      }
+      { expiresIn: "1d" }
     );
 
-    // JWT ko HttpOnly cookie mein save karo
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
@@ -109,13 +118,12 @@ export const login = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    // Frontend ko sirf required user information bhejo
     const userData = {
       _id: userFound._id,
       email: userFound.email,
       name: userFound.name,
       role: userFound.role,
-      token: token, 
+      token: token,
     };
 
     return res.status(200).json({
