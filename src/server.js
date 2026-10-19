@@ -5,7 +5,6 @@ import productRoute from "./routes/productRoute.js"
 import cardRoute from "./routes/cardRoute.js"
 import collectionRoute from "./routes/collectionRoute.js";
 import reviewRoute from "./routes/reviewRoute.js"
-import notificationRoute from "./routes/pushSubscriptionRoute.js";
 import cors from "cors";
 import dotenv from "dotenv";
 
@@ -22,7 +21,6 @@ app.use("/api/users", userRoutes);
 app.use("/api/users", productRoute);
 app.use("/api/users"  ,collectionRoute);
 app.use("/api/users", cardRoute);
-app.use("/api/users" ,reviewRoute) 
-app.use("/api/users", notificationRoute);
+app.use("/api/users" ,reviewRoute)
 
 app.listen(port,()=>console.log(`app is listining on ${port} port`))
